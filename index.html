@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure DBaaS - Advanced</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-color: #f4f7f9;
+      --text-color: #2c3e50;
+      --container-bg: #ffffffcc;
+    }
+
+    [data-theme='dark'] {
+      --bg-color: #1e1e2f;
+      --text-color: #f4f4f4;
+      --container-bg: #2b2b3a;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: var(--container-bg);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h2 {
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+    }
+
+    button {
+      padding: 10px 24px;
+      margin: 6px;
+      background: #3498db;
+      color: white;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
+    }
+
+    .switch {
+      margin: 10px 0;
+      font-size: 14px;
+      cursor: pointer;
+      color: #888;
+      text-decoration: underline;
+    }
+
+    pre {
+      background: #ecf0f1;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 30px;
+      text-align: left;
+      overflow-x: auto;
+      color: #000;
+    }
+
+    .divider {
+      height: 1px;
+      background: #ccc;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div class="container">
+    <h2>Secure Data Submission</h2>
+
+    <select id="encryptionType">
+      <option value="aes">AES-256</option>
+      <option value="rsa">RSA (coming soon)</option>
+    </select>
+
+    <input type="text" id="dataInput" placeholder="Enter your sensitive data" />
+    <input type="file" id="fileInput" />
+    <br/>
+    <button onclick="submitData()">Store Securely</button>
+    <button onclick="autoFill()">Use Example</button>
+    <button onclick="clearInputs()">Clear</button>
+
+    <div class="divider"></div>
+
+    <h2>Retrieve Data</h2>
+    <input type="text" id="dataId" placeholder="Enter record ID" />
+    <br/>
+    <button onclick="fetchData()">Fetch</button>
+    <button onclick="clearOutput()">Clear Output</button>
+
+    <div class="divider"></div>
+    <span class="switch" onclick="toggleTheme()">Toggle Light/Dark Mode 🌗</span>
+
+    <pre id="output">Output will appear here...</pre>
+  </div>
+
+  <script>
+    async function submitData() {
+      const data = document.getElementById('dataInput').value;
+      const file = document.getElementById('fileInput').files[0];
+      const encryption = document.getElementById('encryptionType').value;
+      let payload = { data, encryption };
+
+      if (file) {
+        const text = await file.text();
+        payload.data = text;
+      }
+
+      const res = await fetch('/api/store', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+
+    async function fetchData() {
+      const id = document.getElementById('dataId').value;
+      const res = await fetch(`/api/get/${id}`);
+      const result = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+
+    function autoFill() {
+      document.getElementById('dataInput').value = "Confidential report: Project SecureX";
+    }
+
+    function clearInputs() {
+      document.getElementById('dataInput').value = '';
+      document.getElementById('fileInput').value = '';
+    }
+
+    function clearOutput() {
+      document.getElementById('output').textContent = 'Output will appear here...';
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const current = body.getAttribute('data-theme');
+      body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>
